@@ -15,11 +15,67 @@ const navItems = [
   ['Контакты', 'contacts'],
 ] as const;
 
-const services = [
-  { name: 'Мужская стрижка', price: 'от 4 000 ₸' },
-  { name: 'Детская стрижка', price: 'от 3 000 ₸' },
-  { name: 'Стрижка + борода', price: 'от 7 000 ₸' },
-  { name: 'Депиляция воском', price: 'уточняйте' },
+type Service = {
+  name: string;
+  price: string;
+  time: string;
+};
+
+const popularServices: Service[] = [
+  { name: 'Мужская стрижка', price: 'от 4 000 ₸', time: '1 час' },
+  { name: 'Детская стрижка', price: 'от 3 000 ₸', time: '40 минут' },
+  { name: 'Стрижка + борода', price: 'от 7 000 ₸', time: '1 час' },
+  { name: 'Депиляция воском (уши, нос, скулы)', price: 'от 1 000 ₸', time: '10 минут' },
+  { name: 'Подростковая стрижка (10–16 лет)', price: 'от 4 000 ₸', time: '1 час' },
+];
+
+const serviceCategories: { name: string; services: Service[] }[] = [
+  {
+    name: 'Стрижки',
+    services: [
+      { name: 'Мужская стрижка', price: 'от 4 000 ₸', time: '1 час' },
+      { name: 'Детская стрижка', price: 'от 3 000 ₸', time: '40 минут' },
+      { name: 'Стрижка + борода', price: 'от 7 000 ₸', time: '1 час' },
+      { name: 'Стрижка налысо', price: 'от 2 000 ₸', time: '10 минут' },
+      { name: 'Окантовка', price: 'от 2 000 ₸', time: '10 минут' },
+      { name: 'VIP-комплекс', price: 'от 13 000 ₸', time: '1 час' },
+      { name: 'Подростковая стрижка (10–16 лет)', price: 'от 4 000 ₸', time: '1 час' },
+    ],
+  },
+  {
+    name: 'Борода',
+    services: [
+      { name: 'Моделирование бороды и усов', price: 'от 3 000 ₸', time: '20 минут' },
+      { name: 'Тонирование бороды', price: 'от 5 000 ₸', time: '40 минут' },
+    ],
+  },
+  {
+    name: 'Укладка',
+    services: [
+      { name: 'Мужская укладка', price: 'от 2 000 ₸', time: '10 минут' },
+    ],
+  },
+  {
+    name: 'Уход за лицом',
+    services: [
+      { name: 'Глиняная маска', price: 'от 2 000 ₸', time: '20 минут' },
+      { name: 'Скраб для лица', price: 'от 2 000 ₸', time: '20 минут' },
+      { name: 'Чёрная маска', price: 'от 2 000 ₸', time: '20 минут' },
+    ],
+  },
+  {
+    name: 'Депиляция',
+    services: [
+      { name: 'Депиляция воском (уши, нос, скулы)', price: 'от 1 000 ₸', time: '10 минут' },
+      { name: 'Удаление воском комплекс уши/нос/лицо', price: 'от 1 000 ₸', time: '10 минут' },
+    ],
+  },
+  {
+    name: 'Окрашивание',
+    services: [
+      { name: 'Тонирование седины мужское', price: 'от 5 000 ₸', time: '30 минут' },
+    ],
+  },
 ];
 
 const masters = [
@@ -54,6 +110,8 @@ function SafeImage({ src, alt, sizes, priority = false }: { src: string; alt: st
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [fullPriceOpen, setFullPriceOpen] = useState(false);
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const closeMenu = () => setMenuOpen(false);
 
   useEffect(() => {
@@ -125,18 +183,81 @@ export default function Home() {
           <div className="container editorial-split">
             <div className="section-lead">
               <p className="eyebrow">Прайс</p>
-              <h2>Услуги</h2>
+              <h2>Популярные<br />услуги</h2>
               <p>Всё необходимое для аккуратного и уверенного образа.</p>
             </div>
-            <div className="service-list">
-              {services.map((service, index) => (
-                <div className="service-row" key={service.name}>
-                  <span className="service-index">0{index + 1}</span>
-                  <h3>{service.name}</h3>
-                  <strong>{service.price}</strong>
+            <div className="services-content">
+              <div className="service-list">
+                {popularServices.map((service, index) => (
+                  <div className="service-row" key={service.name}>
+                    <span className="service-index">0{index + 1}</span>
+                    <h3>{service.name}</h3>
+                    <div className="service-meta">
+                      <strong>{service.price}</strong>
+                      <span>{service.time}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className="all-services-toggle"
+                type="button"
+                aria-expanded={fullPriceOpen}
+                aria-controls="full-price"
+                onClick={() => setFullPriceOpen((open) => !open)}
+              >
+                <span>Все услуги</span>
+                <span className="toggle-mark" aria-hidden="true">{fullPriceOpen ? '−' : '+'}</span>
+              </button>
+
+              <div id="full-price" className={`full-price-reveal ${fullPriceOpen ? 'is-open' : ''}`}>
+                <div className="full-price-inner">
+                  <div className="full-price-heading">
+                    <span>Полный прайс</span>
+                    <span>{serviceCategories.reduce((total, category) => total + category.services.length, 0)} услуг</span>
+                  </div>
+
+                  <div className="price-accordion">
+                    {serviceCategories.map((category) => {
+                      const isOpen = openCategory === category.name;
+                      const panelId = `category-${category.name.toLowerCase().replaceAll(' ', '-')}`;
+
+                      return (
+                        <div className={`price-category ${isOpen ? 'is-open' : ''}`} key={category.name}>
+                          <h3>
+                            <button
+                              type="button"
+                              aria-expanded={isOpen}
+                              aria-controls={panelId}
+                              onClick={() => setOpenCategory(isOpen ? null : category.name)}
+                            >
+                              <span>{category.name}</span>
+                              <span className="category-count">{String(category.services.length).padStart(2, '0')}</span>
+                              <span className="category-mark" aria-hidden="true" />
+                            </button>
+                          </h3>
+                          <div id={panelId} className="category-reveal">
+                            <div className="category-services">
+                              {category.services.map((service) => (
+                                <div className="category-service" key={service.name}>
+                                  <span className="category-service-name">{service.name}</span>
+                                  <strong>{service.price}</strong>
+                                  <span className="category-service-time">{service.time}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <a className="full-price-link" href={BOOKING_URL} target="_blank" rel="noreferrer">
+                    Смотреть все услуги и свободное время <Arrow />
+                  </a>
                 </div>
-              ))}
-              <p className="price-note">Актуальную стоимость уточняйте при записи.</p>
+              </div>
             </div>
           </div>
         </section>
